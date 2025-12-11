@@ -51,12 +51,13 @@ export default function MistralChatDemo() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, localMessages, streamingContent]);
 
-  // Reset local messages when persona changes
-  useEffect(() => {
+  // Handle persona change - reset conversation
+  const handlePersonaChange = (newPersona: PersonaKey) => {
+    setPersona(newPersona);
     setLocalMessages([]);
     setStreamingContent('');
     clearHistory();
-  }, [persona, clearHistory]);
+  };
 
   const displayMessages = useStreaming
     ? localMessages.filter(m => m.role !== 'system')
@@ -142,7 +143,7 @@ export default function MistralChatDemo() {
           {/* Persona selector */}
           <select
             value={persona}
-            onChange={(e) => setPersona(e.target.value as PersonaKey)}
+            onChange={(e) => handlePersonaChange(e.target.value as PersonaKey)}
             className="input text-sm py-1"
           >
             <option value="assistant">Assistant</option>

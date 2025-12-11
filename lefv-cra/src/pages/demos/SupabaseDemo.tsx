@@ -85,7 +85,27 @@ export default function SupabaseDemo() {
 
   // Setup realtime subscription
   useEffect(() => {
-    fetchTodos();
+    let ignore = false;
+
+    const loadTodos = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('todos')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!ignore) {
+        if (error) {
+          setError(error.message);
+        } else {
+          setTodos(data || []);
+        }
+        setLoading(false);
+      }
+    };
+
+    loadTodos();
 
     const channel = supabase
       .channel('todos-changes')
@@ -94,14 +114,18 @@ export default function SupabaseDemo() {
         { event: '*', schema: 'public', table: 'todos' },
         (payload) => {
           console.log('Realtime update:', payload);
+          // Refetch on realtime update - this is in a callback, not sync in effect
           fetchTodos();
         }
       )
       .subscribe((status) => {
-        setRealtimeStatus(status === 'SUBSCRIBED' ? 'connected' : 'disconnected');
+        if (!ignore) {
+          setRealtimeStatus(status === 'SUBSCRIBED' ? 'connected' : 'disconnected');
+        }
       });
 
     return () => {
+      ignore = true;
       supabase.removeChannel(channel);
     };
   }, []);

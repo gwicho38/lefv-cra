@@ -110,9 +110,11 @@ export default function ReactTypeScriptDemo() {
   // Custom hook usage (demo of useLocalStorage pattern)
   const [persistedValue, setPersistedValue] = useLocalStorage<string>('demo-value', 'Hello!');
 
-  // Track renders
+  // Track renders - use state for display since refs shouldn't be read during render
+  const [displayRenderCount, setDisplayRenderCount] = useState(0);
   useEffect(() => {
     renderCount.current += 1;
+    setDisplayRenderCount(renderCount.current);
   });
 
   // Focus input on mount
@@ -228,7 +230,7 @@ export default function ReactTypeScriptDemo() {
             className="input mb-2"
           />
           <p className="text-sm text-gray-500">
-            Component has rendered {renderCount.current} times
+            Component has rendered {displayRenderCount} times
           </p>
           <pre className="mt-4 p-3 bg-gray-900 text-gray-100 rounded text-xs overflow-auto">
 {`const inputRef = useRef<HTMLInputElement>(null);
