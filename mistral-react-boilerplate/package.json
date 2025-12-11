@@ -1,19 +1,31 @@
 {
-  "name": "mistral-react-boilerplate",
+  "name": "lefv-cra",
   "version": "1.0.0",
-  "description": "Production-ready React boilerplate with TypeScript, Supabase, Redux, and Redis caching. Built for technical interviews.",
+  "description": "Production-ready React boilerplate with TypeScript, Supabase, Redux, Redis caching, and Mistral AI SDK. Built for technical interviews.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
+    "bin",
     "dist",
     "src",
     "server",
     "docs",
-    "README.md"
+    "public",
+    "index.html",
+    "vite.config.ts",
+    "tsconfig.json",
+    "tsconfig.app.json",
+    "tsconfig.server.json",
+    "tailwind.config.ts",
+    "postcss.config.js",
+    "eslint.config.js",
+    ".env.example",
+    "README.md",
+    "ARCHITECTURE.md"
   ],
   "bin": {
-    "create-mistral-app": "./bin/create-app.js"
+    "lefv-cra": "./bin/create-app.js"
   },
   "scripts": {
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
@@ -45,12 +57,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/mistral-react-boilerplate"
+    "url": "https://github.com/lefv/lefv-cra"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/mistral-react-boilerplate/issues"
+    "url": "https://github.com/lefv/lefv-cra/issues"
   },
-  "homepage": "https://github.com/yourusername/mistral-react-boilerplate#readme",
+  "homepage": "https://github.com/lefv/lefv-cra#readme",
   "engines": {
     "node": ">=18.0.0"
   },

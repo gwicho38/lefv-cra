@@ -1,6 +1,6 @@
-# Mistral React Boilerplate
+# lefv-cra
 
-A production-ready React starter with TypeScript, Supabase, Redux, and Redis caching. Built for the Mistral AI technical interview.
+A production-ready React starter with TypeScript, Supabase, Redux, Redis caching, and Mistral AI SDK integration. Built for technical interviews and rapid prototyping.
 
 ## Features
 
@@ -12,13 +12,29 @@ A production-ready React starter with TypeScript, Supabase, Redux, and Redis cac
 - **Tailwind CSS v4** with custom design system
 - **Express** API server with subprocess management
 - **React Query** for server state management
+- **Mistral AI SDK** with real-world usage examples (chat, streaming, function calling, code generation)
 
 ## Quick Start
 
+### Option 1: Using npx (Recommended)
+
+```bash
+# Create a new project
+npx lefv-cra my-app
+
+# Navigate to the project
+cd my-app
+
+# Start development servers
+npm run dev
+```
+
+### Option 2: Clone the repository
+
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mistral-react-boilerplate.git
-cd mistral-react-boilerplate
+git clone https://github.com/lefv/lefv-cra.git
+cd lefv-cra
 
 # Install dependencies
 npm install
@@ -35,7 +51,7 @@ The frontend runs on `http://localhost:5173` and the backend API on `http://loca
 ## Project Structure
 
 ```
-mistral-react-boilerplate/
+lefv-cra/
 ├── src/                      # Frontend source code
 │   ├── components/           # React components
 │   │   ├── layout/          # Layout components
