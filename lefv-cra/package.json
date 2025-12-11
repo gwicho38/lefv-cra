@@ -1,6 +1,6 @@
 {
   "name": "lefv-cra",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Production-ready React boilerplate with TypeScript, Supabase, Redux, Redis caching, and Mistral AI SDK. Built for technical interviews.",
   "type": "module",
   "main": "dist/index.js",
