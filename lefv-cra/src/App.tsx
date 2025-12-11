@@ -20,7 +20,7 @@ import { store, useAppDispatch } from '@/store';
 import { initializeAuth } from '@/store/slices/authSlice';
 import { initializeUI } from '@/store/slices/uiSlice';
 
-// Pages
+// Main Pages
 import HomePage from '@/components/pages/HomePage';
 import TodosPage from '@/components/pages/TodosPage';
 import MistralPage from '@/pages/MistralPage';

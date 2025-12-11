@@ -43,6 +43,7 @@ export default function ReduxDemo() {
     if (!notificationText.trim()) return;
     dispatch(addNotification({
       type: 'info',
+      title: 'Notification',
       message: notificationText,
     }));
     setNotificationText('');

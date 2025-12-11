@@ -28,7 +28,8 @@ export default function SupabaseDemo() {
       .from('todos')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(10)
+      .returns<Todo[]>();
 
     if (error) {
       setError(error.message);
@@ -93,7 +94,8 @@ export default function SupabaseDemo() {
         .from('todos')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(10)
+        .returns<Todo[]>();
 
       if (!ignore) {
         if (error) {

@@ -11,12 +11,42 @@
  * - All API calls go through your backend (never expose API key)
  * - Hooks handle loading, error, and data states
  *
- * USAGE PATTERNS:
- * - useMistralChat: One-off completions
- * - useMistralStream: Streaming completions
- * - useMistralConversation: Multi-turn conversations
- * - useMistralCode: Code generation
- * - useMistralEmbeddings: Text embeddings
+ * USAGE PATTERNS & WHEN TO USE:
+ *
+ * 1. useMistralChat: One-off completions
+ *    WHY: Use for stateless, single-turn requests where you don't need history.
+ *    WHEN: Simple prompts, Q&A, classifications, transformations. Fast & simple.
+ *    EXAMPLE: Translate text, generate summaries, explain concepts one-time.
+ *
+ * 2. useMistralStream: Streaming completions
+ *    WHY: Use when response is large/slow and you want real-time token delivery.
+ *    WHEN: Long-form generation (essays, code), better UX (shows progress).
+ *    EXAMPLE: Real-time chat UI, streaming code generation, live typing effect.
+ *    KEY: Updates content state as tokens arrive; enables cancellation (abort).
+ *
+ * 3. useMistralConversation: Multi-turn conversations
+ *    WHY: Use for stateful chat with memory/context across exchanges.
+ *    WHEN: Chat UIs, interactive assistants, context-dependent tasks.
+ *    EXAMPLE: Customer support bot, tutoring session, collaborative brainstorm.
+ *    KEY: Maintains message history automatically; each reply sees prior context.
+ *
+ * 4. useMistralCode: Code generation
+ *    WHY: Specialized hook for code (Codestral); handles language/token tuning.
+ *    WHEN: IDE features, scaffolding, snippet generation, code assistance.
+ *    EXAMPLE: Generate React component, write SQL, scaffold boilerplate.
+ *    KEY: Pre-configured for code quality (language-specific, higher tokens).
+ *
+ * 5. useMistralEmbeddings: Text embeddings
+ *    WHY: Convert text to vectors for semantic search, clustering, similarity.
+ *    WHEN: Vector search, recommendation systems, duplicate detection, RAG.
+ *    EXAMPLE: Find similar docs, cluster customer feedback, semantic search.
+ *    KEY: Returns 1024-dim vectors; batch multiple inputs at once.
+ *
+ * 6. useMistralTools (bonus): Function calling
+ *    WHY: Let LLM request external tools/APIs; semi-autonomous workflows.
+ *    WHEN: Multi-step tasks, API orchestration, agent loops.
+ *    EXAMPLE: Book hotel (calls hotel API), check weather (calls weather API).
+ *    KEY: You define tools, model decides when/how to call them.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -65,18 +95,34 @@ interface MistralState<T> {
 // =============================================================================
 
 /**
- * Hook for single chat completions
+ * Hook for single, stateless chat completions.
  *
- * USAGE:
+ * WHY: Best for simple Q&A, transformations, and classification tasks.
+ * No state overhead—fire and forget, no history tracking.
+ *
+ * WHEN TO USE:
+ * - One-off prompts (no need for prior context)
+ * - Summarization, translation, sentiment analysis
+ * - Fast responses where UX doesn't require streaming
+ * - Simple workflows (user asks, AI answers, done)
+ *
+ * DON'T USE if:
+ * - You need multi-turn conversation (use useMistralConversation)
+ * - Response will be very long (use useMistralStream for better UX)
+ * - You need tool calling (use useMistralTools)
+ *
+ * PERFORMANCE: Fastest—no history; good for high-frequency requests.
+ *
+ * EXAMPLE:
  * ```typescript
  * const { chat, data, loading, error } = useMistralChat();
  *
- * const handleSubmit = async () => {
- *   const response = await chat([
+ * const handleAsk = async () => {
+ *   const answer = await chat([
  *     { role: 'system', content: 'You are a helpful assistant' },
- *     { role: 'user', content: 'Hello!' }
+ *     { role: 'user', content: 'What is React?' }
  *   ]);
- *   console.log(response);
+ *   console.log(answer); // String response
  * };
  * ```
  */
@@ -123,18 +169,44 @@ export function useMistralChat() {
 // =============================================================================
 
 /**
- * Hook for streaming chat completions
+ * Hook for streaming chat completions with real-time token delivery.
  *
- * USAGE:
+ * WHY: Provides superior UX for long-form responses—shows progress as tokens arrive.
+ * Enables cancellation mid-stream via abort().
+ *
+ * WHEN TO USE:
+ * - Large/slow responses (essays, code, detailed explanations)
+ * - Interactive chat UIs (real-time typing effect feels responsive)
+ * - Code generation (user sees code as it's written)
+ * - Educational content where incremental reveal is helpful
+ * - Time-sensitive workflows where early feedback matters
+ *
+ * DON'T USE if:
+ * - Response will be short (use useMistralChat for simplicity)
+ * - You need conversation history (combine with useMistralConversation)
+ * - You need tool calling
+ *
+ * PERFORMANCE: Higher latency to first token, but user sees partial results.
+ * Good for perceived performance (feels faster even if actual time is similar).
+ *
+ * KEY FEATURES:
+ * - content: accumulated streamed text updates in real-time
+ * - abort(): cancel stream mid-response
+ * - reset(): clear content and error state
+ *
+ * EXAMPLE:
  * ```typescript
  * const { stream, content, loading, error, abort } = useMistralStream();
  *
- * const handleSubmit = async () => {
+ * const handleStream = async () => {
  *   await stream([
  *     { role: 'user', content: 'Write a poem about coding' }
  *   ]);
  *   // content updates in real-time as tokens arrive
  * };
+ *
+ * // User can abort early
+ * <button onClick={abort} disabled={!loading}>Stop</button>
  * ```
  */
 export function useMistralStream() {
@@ -257,19 +329,50 @@ export function useMistralStream() {
 // =============================================================================
 
 /**
- * Hook for multi-turn conversations with history
+ * Hook for multi-turn conversations with automatic history management.
  *
- * USAGE:
+ * WHY: Maintains message history and system context. Each reply is aware of
+ * prior exchanges—perfect for stateful chat UIs and assistants.
+ *
+ * WHEN TO USE:
+ * - Chat interfaces (user ↔ AI dialogue)
+ * - Assistants that need to remember prior context
+ * - Iterative problem-solving (follow-ups build on previous answers)
+ * - Customer support bots, tutoring sessions, brainstorming
+ *
+ * DON'T USE if:
+ * - Single one-off request (use useMistralChat)
+ * - Response needs real-time streaming (use useMistralStream separately)
+ * - Conversation is very long (token limit risk—manage pruning yourself)
+ *
+ * PERFORMANCE: O(n) cost per message (all prior messages sent each time).
+ * Consider clearing history or using windowing for long conversations.
+ *
+ * KEY FEATURES:
+ * - messages: full conversation history (system + all exchanges)
+ * - sendMessage(text): auto-appends user msg, fetches reply, appends assistant msg
+ * - clearHistory(): reset to system prompt or empty
+ * - removeLastExchange(): undo last Q&A pair
+ *
+ * EXAMPLE:
  * ```typescript
  * const {
  *   messages,
  *   sendMessage,
  *   loading,
  *   clearHistory
- * } = useMistralConversation('You are a helpful coding assistant');
+ * } = useMistralConversation(
+ *   'You are an expert JavaScript tutor. Be clear and concise.'
+ * );
  *
- * await sendMessage('How do I use React hooks?');
- * await sendMessage('Can you give me an example?'); // Has context
+ * await sendMessage('How do closures work?');
+ * // messages now: [system, user, assistant]
+ *
+ * await sendMessage('Can you show an example?');
+ * // messages now: [system, user, assistant, user, assistant]
+ * // Model has full context of first exchange
+ *
+ * <button onClick={clearHistory}>New Chat</button>
  * ```
  */
 export function useMistralConversation(systemPrompt?: string) {
@@ -342,13 +445,43 @@ export function useMistralConversation(systemPrompt?: string) {
 // =============================================================================
 
 /**
- * Hook for code generation with Codestral
+ * Hook for code generation using Codestral (Mistral's code model).
  *
- * USAGE:
+ * WHY: Specialized for code tasks. Tuned for syntax correctness, language idioms,
+ * and best practices. Separate from general chat for performance/quality.
+ *
+ * WHEN TO USE:
+ * - IDE/editor features (code completion, scaffolding)
+ * - Generate boilerplate (classes, functions, components)
+ * - Solve coding problems (algorithms, recipes)
+ * - Refactor or optimize existing code
+ * - Generate tests, SQL, shell scripts, etc.
+ *
+ * DON'T USE if:
+ * - Task is not code-related (use useMistralChat)
+ * - You need conversation history (call generate() multiple times or use useMistralConversation)
+ * - You need streaming (use useMistralStream with custom prompt)
+ *
+ * PERFORMANCE: Optimized for code; may be faster/better quality than general models.
+ * Default 2048 tokens usually sufficient for substantial code blocks.
+ *
+ * KEY FEATURES:
+ * - generate(prompt, language, maxTokens): returns code string
+ * - language param: 'typescript', 'python', 'javascript', 'sql', etc.
+ * - reset(): clear code and error state
+ *
+ * EXAMPLE:
  * ```typescript
- * const { generate, code, loading } = useMistralCode();
+ * const { generate, code, loading, error } = useMistralCode();
  *
- * await generate('Create a React component for a modal', 'typescript');
+ * await generate(
+ *   'Create a React hook that fetches data from an API with loading/error states',
+ *   'typescript',
+ *   2048
+ * );
+ *
+ * // code now contains the generated TypeScript function
+ * <pre>{code}</pre>
  * ```
  */
 export function useMistralCode() {
@@ -396,14 +529,53 @@ export function useMistralCode() {
 // =============================================================================
 
 /**
- * Hook for generating text embeddings
+ * Hook for generating text embeddings (vector representations).
  *
- * USAGE:
+ * WHY: Converts text to high-dimensional vectors for semantic operations.
+ * Enables similarity search, clustering, deduplication without LLM inference.
+ *
+ * WHEN TO USE:
+ * - Vector/semantic search (find similar documents, search RAG knowledge base)
+ * - Recommendation systems (find similar products, users, content)
+ * - Duplicate/similarity detection (documents, reviews, complaints)
+ * - Clustering (group similar texts, customer feedback categorization)
+ * - Anomaly detection (identify texts unlike the corpus)
+ *
+ * DON'T USE if:
+ * - You need text generation or understanding (use chat hooks)
+ * - Low-dimensional or symbolic similarity suffices (use edit distance, keyword match)
+ *
+ * PERFORMANCE: Very fast (no generation); batch process multiple texts in one call.
+ * Returns 1024-dimensional vectors. Cheaper than chat API.
+ *
+ * KEY FEATURES:
+ * - embed(inputs[]): takes array of strings, returns array of 1024-dim vectors
+ * - embeddings: current result (null until first call)
+ * - reset(): clear embeddings and error state
+ *
+ * EXAMPLE:
  * ```typescript
- * const { embed, embeddings, loading } = useMistralEmbeddings();
+ * const { embed, embeddings, loading, error } = useMistralEmbeddings();
  *
- * const vectors = await embed(['Hello world', 'Hi there']);
- * // Returns array of 1024-dimensional vectors
+ * // Batch embed multiple texts
+ * const vectors = await embed([
+ *   'What is React?',
+ *   'How to use hooks',
+ *   'Component lifecycle'
+ * ]);
+ * // vectors is Array<number[]>, shape (3, 1024)
+ *
+ * // For similarity search: compute cosine distance between vectors
+ * function cosineSimilarity(a: number[], b: number[]) {
+ *   const dot = a.reduce((sum, x, i) => sum + x * b[i], 0);
+ *   const normA = Math.sqrt(a.reduce((s, x) => s + x * x, 0));
+ *   const normB = Math.sqrt(b.reduce((s, x) => s + x * x, 0));
+ *   return dot / (normA * normB);
+ * }
+ *
+ * const userQueryVector = embeddings![0];
+ * const similarities = embeddings!.slice(1).map(v => cosineSimilarity(userQueryVector, v));
+ * const bestMatch = similarities.indexOf(Math.max(...similarities)) + 1;
  * ```
  */
 export function useMistralEmbeddings() {
@@ -446,29 +618,71 @@ export function useMistralEmbeddings() {
 // =============================================================================
 
 /**
- * Hook for function calling / tool use
+ * Hook for function calling / tool use (semi-autonomous workflows).
  *
- * USAGE:
+ * WHY: Let the LLM decide when and how to call external tools/APIs.
+ * Enables multi-step reasoning and API orchestration without hardcoded logic.
+ *
+ * WHEN TO USE:
+ * - Agent workflows (AI decides which tools to call)
+ * - API orchestration (book hotel → call flight API → call car rental API)
+ * - Complex multi-step tasks (research → analyze → summarize)
+ * - Autonomous task completion (user says "book me a trip", AI coordinates)
+ *
+ * DON'T USE if:
+ * - Simple Q&A (use useMistralChat)
+ * - Task doesn't require external tools
+ * - You need full conversation history (implement tool loop yourself)
+ *
+ * FLOW: You define tools → User sends request → LLM decides to call tools →
+ * You execute tools → Feed results back to LLM → Get final response.
+ *
+ * EXAMPLE:
  * ```typescript
- * const tools: ToolDefinition[] = [{
- *   type: 'function',
- *   function: {
- *     name: 'get_weather',
- *     description: 'Get weather for a location',
- *     parameters: {
- *       type: 'object',
- *       properties: {
- *         location: { type: 'string', description: 'City name' }
- *       },
- *       required: ['location']
+ * const tools: ToolDefinition[] = [
+ *   {
+ *     type: 'function',
+ *     function: {
+ *       name: 'get_weather',
+ *       description: 'Get current weather for a location',
+ *       parameters: {
+ *         type: 'object',
+ *         properties: {
+ *           location: {
+ *             type: 'string',
+ *             description: 'City name (e.g., "Paris", "New York")'
+ *           },
+ *           unit: {
+ *             type: 'string',
+ *             enum: ['celsius', 'fahrenheit'],
+ *             description: 'Temperature unit'
+ *           }
+ *         },
+ *         required: ['location']
+ *       }
  *     }
  *   }
- * }];
+ * ];
  *
- * const { call, toolCalls, content, loading } = useMistralTools(tools);
+ * const { call, toolCalls, content, loading, error } = useMistralTools(tools);
  *
- * await call([{ role: 'user', content: 'What is the weather in Paris?' }]);
- * // Check toolCalls for function invocation
+ * const handleRequest = async () => {
+ *   const result = await call([
+ *     { role: 'user', content: 'What is the weather in Paris?' }
+ *   ]);
+ *
+ *   if (toolCalls) {
+ *     // LLM decided to call tools
+ *     toolCalls.forEach(tool => {
+ *       console.log(`Call: ${tool.function.name}`);
+ *       console.log(`Args: ${tool.function.arguments}`);
+ *       // Execute the actual tool, then send results back
+ *     });
+ *   }
+ *
+ *   // content: final text response from LLM
+ *   console.log(content);
+ * };
  * ```
  */
 export function useMistralTools(tools: ToolDefinition[]) {
