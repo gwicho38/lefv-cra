@@ -36,7 +36,6 @@ export interface Database {
           title: string;
           description: string | null;
           completed: boolean;
-          user_id: string;
         };
         Insert: {
           id?: string;
@@ -45,7 +44,6 @@ export interface Database {
           title: string;
           description?: string | null;
           completed?: boolean;
-          user_id: string;
         };
         Update: {
           id?: string;
@@ -54,16 +52,8 @@ export interface Database {
           title?: string;
           description?: string | null;
           completed?: boolean;
-          user_id?: string;
         };
-        Relationships: [
-          {
-            foreignKeyName: 'todos_user_id_fkey';
-            columns: ['user_id'];
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          }
-        ];
+        Relationships: [];
       };
 
       // Example: users table (profiles)

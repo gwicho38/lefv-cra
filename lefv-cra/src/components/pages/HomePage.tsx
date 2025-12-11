@@ -15,8 +15,22 @@ import { Link } from 'react-router-dom';
 
 const features = [
   {
+    title: 'Mistral AI Chatbot',
+    description: 'Full-featured chat with streaming, personas, and conversation history',
+    path: '/demo/mistral-chat',
+    icon: (
+      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        <circle cx="8" cy="10" r="1.5"/>
+        <circle cx="12" cy="10" r="1.5"/>
+        <circle cx="16" cy="10" r="1.5"/>
+      </svg>
+    ),
+  },
+  {
     title: 'React + TypeScript',
     description: 'Type-safe development with modern React patterns and hooks',
+    path: '/demo/react',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 10.11c1.03 0 1.87.84 1.87 1.89 0 1-.84 1.85-1.87 1.85S10.13 13 10.13 12c0-1.05.84-1.89 1.87-1.89M7.37 20c.63.38 2.01-.2 3.6-1.7-.52-.59-1.03-1.23-1.51-1.9a22.7 22.7 0 01-2.4-.36c-.51 2.14-.32 3.61.31 3.96m.71-5.74l-.29-.51c-.11.29-.22.58-.29.86.27.06.57.11.88.16l-.3-.51m6.54-.76l.81-1.5-.81-1.5c-.3-.53-.62-1-.91-1.47C13.17 9 12.6 9 12 9c-.6 0-1.17 0-1.71.03-.29.47-.61.94-.91 1.47L8.57 12l.81 1.5c.3.53.62 1 .91 1.47.54.03 1.11.03 1.71.03.6 0 1.17 0 1.71-.03.29-.47.61-.94.91-1.47M12 6.78c-.19.22-.39.45-.59.72h1.18c-.2-.27-.4-.5-.59-.72m0 10.44c.19-.22.39-.45.59-.72h-1.18c.2.27.4.5.59.72M16.62 4c-.62-.38-2 .2-3.59 1.7.52.59 1.03 1.23 1.51 1.9.82.08 1.63.2 2.4.36.51-2.14.32-3.61-.32-3.96m-.7 5.74l.29.51c.11-.29.22-.58.29-.86-.27-.06-.57-.11-.88-.16l.3.51m1.45-7.05c1.47.84 1.63 3.05 1.01 5.63 2.54.75 4.37 1.99 4.37 3.68s-1.83 2.93-4.37 3.68c.62 2.58.46 4.79-1.01 5.63-1.46.84-3.45-.12-5.37-1.95-1.92 1.83-3.91 2.79-5.38 1.95-1.46-.84-1.62-3.05-1-5.63-2.54-.75-4.37-1.99-4.37-3.68s1.83-2.93 4.37-3.68c-.62-2.58-.46-4.79 1-5.63 1.47-.84 3.46.12 5.38 1.95 1.92-1.83 3.91-2.79 5.37-1.95M17.08 12c.34.75.64 1.5.89 2.26 2.1-.63 3.28-1.53 3.28-2.26 0-.73-1.18-1.63-3.28-2.26-.25.76-.55 1.51-.89 2.26M6.92 12c-.34-.75-.64-1.5-.89-2.26-2.1.63-3.28 1.53-3.28 2.26 0 .73 1.18 1.63 3.28 2.26.25-.76.55-1.51.89-2.26m9 2.26l-.3.51c.31-.05.61-.1.88-.16-.07-.28-.18-.57-.29-.86l-.29.51m-2.89 4.04c1.59 1.5 2.97 2.08 3.59 1.7.64-.35.83-1.82.32-3.96-.77.16-1.58.28-2.4.36-.48.67-.99 1.31-1.51 1.9M8.08 9.74l.3-.51c-.31.05-.61.1-.88.16.07.28.18.57.29.86l.29-.51m2.89-4.04C9.38 4.2 8 3.62 7.37 4c-.63.35-.82 1.82-.31 3.96a22.7 22.7 0 012.4-.36c.48-.67.99-1.31 1.51-1.9z" />
@@ -26,6 +40,7 @@ const features = [
   {
     title: 'Supabase Backend',
     description: 'PostgreSQL database with real-time subscriptions and auth',
+    path: '/demo/supabase',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .716.233l9.081-12.261.401-.562a1.04 1.04 0 0 0-.836-1.66z" />
@@ -35,6 +50,7 @@ const features = [
   {
     title: 'Redux Toolkit',
     description: 'Global state management with slices, thunks, and selectors',
+    path: '/demo/redux',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M16.634 16.504c.87-.075 1.543-.818 1.5-1.705-.043-.888-.756-1.595-1.642-1.595h-.056c-.914.043-1.628.799-1.586 1.714.043.457.215.857.5 1.143-1.057 2.084-2.672 3.613-5.1 4.885-1.643.857-3.372 1.172-5.086.943-1.4-.186-2.486-.758-3.186-1.729-.971-1.358-1.1-2.83-.357-4.316.528-.972 1.357-1.686 1.9-2.057-.114-.372-.272-.972-.357-1.415-4.228 3.055-3.8 7.185-2.572 9.127 1.014 1.455 3.072 2.372 5.358 2.372.628 0 1.257-.086 1.886-.229 3.986-.841 7.014-3.443 8.798-7.138z" />
@@ -46,6 +62,7 @@ const features = [
   {
     title: 'Redis Caching',
     description: 'Server-side caching for optimal performance and cost reduction',
+    path: '/demo/redis',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M23.994 14.543c-.003.49-.135.979-.429 1.396-.592.852-1.502 1.437-2.704 1.741-1.237.313-2.653.33-4.108.05a13.57 13.57 0 0 1-1.53-.388c-.266.163-.56.312-.882.445-.903.377-1.957.576-3.141.576-1.218 0-2.298-.21-3.219-.606a5.466 5.466 0 0 1-.905-.48c-.492.155-1.022.284-1.59.38-1.46.257-2.874.218-4.097-.116-1.189-.328-2.08-.92-2.65-1.76-.279-.416-.402-.892-.397-1.376l-.001-.217.001-2.07c.001.53.203 1.048.566 1.492.592.729 1.517 1.232 2.75 1.496 1.27.273 2.734.258 4.242-.042.566-.112 1.101-.258 1.601-.427.627.293 1.355.51 2.174.642.002.004-2.343.655-2.343 4.078 0 .002 0 .003.001.004v.001a.312.312 0 0 0 .116.257c.074.06.166.09.26.09h4.65c.192 0 .351-.144.374-.333 0-.001 0-.002.001-.003.195-3.416-2.335-4.093-2.335-4.093.844-.133 1.593-.357 2.236-.658.52.173 1.077.323 1.67.44 1.523.298 2.998.31 4.275.033 1.243-.27 2.182-.779 2.793-1.513.372-.447.581-.972.583-1.507l.002 2.287c0 .07-.002.141-.005.212z" />
@@ -56,6 +73,7 @@ const features = [
   {
     title: 'Tailwind CSS',
     description: 'Utility-first CSS framework with custom design system',
+    path: '/demo/tailwind',
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z" />
@@ -65,6 +83,7 @@ const features = [
   {
     title: 'Process Management',
     description: 'Subprocess utilities for running background tasks and scripts',
+    path: '/demo/process',
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -103,13 +122,17 @@ export default function HomePage() {
       {/* Features grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {features.map((feature) => (
-          <div key={feature.title} className="card hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-4">
+          <Link
+            key={feature.title}
+            to={feature.path}
+            className="card hover:shadow-lg transition-shadow group cursor-pointer"
+          >
+            <div className="w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-4 group-hover:scale-110 transition-transform">
               {feature.icon}
             </div>
-            <h3 className="font-semibold mb-2">{feature.title}</h3>
+            <h3 className="font-semibold mb-2 group-hover:text-primary-600 transition-colors">{feature.title}</h3>
             <p className="text-gray-600 dark:text-gray-400 text-sm">{feature.description}</p>
-          </div>
+          </Link>
         ))}
       </div>
 

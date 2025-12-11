@@ -25,7 +25,7 @@ import {
   type ChatMessage,
   type ToolDefinition,
   type MistralModel,
-} from '../mistral';
+} from '../mistral.js';
 
 const router = Router();
 

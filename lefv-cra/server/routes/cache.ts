@@ -20,7 +20,7 @@ import {
   cacheExists,
   cacheTTL,
   cacheExtendTTL,
-} from '../redis';
+} from '../redis.js';
 
 const router = Router();
 

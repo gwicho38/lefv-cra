@@ -12,7 +12,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { redisHealthCheck } from '../redis';
+import { redisHealthCheck } from '../redis.js';
 
 const router = Router();
 

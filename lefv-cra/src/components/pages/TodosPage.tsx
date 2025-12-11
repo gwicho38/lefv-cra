@@ -53,7 +53,6 @@ export default function TodosPage() {
     await dispatch(
       createTodo({
         title: newTodoTitle.trim(),
-        user_id: 'demo-user', // In real app, get from auth
         completed: false,
       })
     );

@@ -28,13 +28,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 // Import routes
-import cacheRoutes from './routes/cache';
-import processRoutes from './routes/process';
-import healthRoutes from './routes/health';
-import mistralRoutes from './routes/mistral';
+import cacheRoutes from './routes/cache.js';
+import processRoutes from './routes/process.js';
+import healthRoutes from './routes/health.js';
+import mistralRoutes from './routes/mistral.js';
 
 // Import Redis utilities
-import { closeRedis } from './redis';
+import { closeRedis } from './redis.js';
 
 // Load environment variables
 dotenv.config();

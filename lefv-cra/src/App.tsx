@@ -25,6 +25,15 @@ import HomePage from '@/components/pages/HomePage';
 import TodosPage from '@/components/pages/TodosPage';
 import MistralPage from '@/pages/MistralPage';
 
+// Demo Pages
+import ReactTypeScriptDemo from '@/pages/demos/ReactTypeScriptDemo';
+import SupabaseDemo from '@/pages/demos/SupabaseDemo';
+import ReduxDemo from '@/pages/demos/ReduxDemo';
+import RedisDemo from '@/pages/demos/RedisDemo';
+import TailwindDemo from '@/pages/demos/TailwindDemo';
+import ProcessManagementDemo from '@/pages/demos/ProcessManagementDemo';
+import MistralChatDemo from '@/pages/demos/MistralChatDemo';
+
 // Layout
 import Layout from '@/components/layout/Layout';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -86,6 +95,14 @@ function App() {
                     <Route index element={<HomePage />} />
                     <Route path="todos" element={<TodosPage />} />
                     <Route path="mistral" element={<MistralPage />} />
+                    {/* Demo Pages */}
+                    <Route path="demo/react" element={<ReactTypeScriptDemo />} />
+                    <Route path="demo/supabase" element={<SupabaseDemo />} />
+                    <Route path="demo/redux" element={<ReduxDemo />} />
+                    <Route path="demo/redis" element={<RedisDemo />} />
+                    <Route path="demo/tailwind" element={<TailwindDemo />} />
+                    <Route path="demo/process" element={<ProcessManagementDemo />} />
+                    <Route path="demo/mistral-chat" element={<MistralChatDemo />} />
                   </Route>
                 </Routes>
               </Suspense>
