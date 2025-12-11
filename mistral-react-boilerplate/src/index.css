@@ -1,0 +1,301 @@
+/**
+ * =============================================================================
+ * GLOBAL STYLES - Tailwind CSS
+ * =============================================================================
+ *
+ * INTERVIEW NOTES:
+ * - Tailwind v4 uses CSS-first configuration
+ * - The @theme directive defines design tokens
+ * - Utility classes are JIT-compiled from source files
+ */
+
+@import "tailwindcss";
+
+/* =============================================================================
+   THEME CONFIGURATION
+   ============================================================================= */
+
+@theme {
+  /* Colors - Mistral AI inspired palette */
+  --color-primary-50: oklch(0.97 0.01 250);
+  --color-primary-100: oklch(0.93 0.02 250);
+  --color-primary-200: oklch(0.86 0.04 250);
+  --color-primary-300: oklch(0.76 0.08 250);
+  --color-primary-400: oklch(0.64 0.12 250);
+  --color-primary-500: oklch(0.55 0.15 250);
+  --color-primary-600: oklch(0.47 0.14 250);
+  --color-primary-700: oklch(0.40 0.12 250);
+  --color-primary-800: oklch(0.33 0.10 250);
+  --color-primary-900: oklch(0.27 0.08 250);
+  --color-primary-950: oklch(0.18 0.05 250);
+
+  /* Semantic colors */
+  --color-success: oklch(0.72 0.17 142);
+  --color-warning: oklch(0.75 0.18 80);
+  --color-error: oklch(0.65 0.2 25);
+  --color-info: oklch(0.70 0.15 230);
+
+  /* Font families */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing scale */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+  --spacing-128: 32rem;
+
+  /* Border radius */
+  --radius-4xl: 2rem;
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+  --animate-slide-down: slide-down 0.3s ease-out;
+}
+
+/* =============================================================================
+   KEYFRAMES
+   ============================================================================= */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =============================================================================
+   BASE STYLES
+   ============================================================================= */
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-gray-900 min-h-screen;
+}
+
+.dark body {
+  @apply bg-gray-950 text-gray-100;
+}
+
+/* Focus ring styles */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary-500;
+}
+
+/* Selection styles */
+::selection {
+  @apply bg-primary-500/30;
+}
+
+/* =============================================================================
+   COMPONENT STYLES
+   ============================================================================= */
+
+/* Button base styles */
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200;
+}
+
+.btn:focus {
+  @apply outline-none;
+}
+
+.btn:focus-visible {
+  @apply ring-2 ring-offset-2;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  @apply bg-primary-600 text-white;
+}
+
+.btn-primary:hover {
+  @apply bg-primary-700;
+}
+
+.btn-primary:focus-visible {
+  @apply ring-primary-500;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  @apply bg-gray-200 text-gray-900;
+}
+
+.btn-secondary:hover {
+  @apply bg-gray-300;
+}
+
+.dark .btn-secondary {
+  @apply bg-gray-700 text-gray-100;
+}
+
+.dark .btn-secondary:hover {
+  @apply bg-gray-600;
+}
+
+.btn-secondary:focus-visible {
+  @apply ring-gray-500;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  @apply bg-transparent text-gray-600;
+}
+
+.btn-ghost:hover {
+  @apply bg-gray-100;
+}
+
+.dark .btn-ghost {
+  @apply text-gray-400;
+}
+
+.dark .btn-ghost:hover {
+  @apply bg-gray-800;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-3 py-2 rounded-lg;
+  @apply border border-gray-300 bg-white text-gray-900;
+  @apply transition-colors duration-200;
+}
+
+.input::placeholder {
+  @apply text-gray-400;
+}
+
+.input:focus {
+  @apply border-primary-500 ring-1 ring-primary-500;
+}
+
+.dark .input {
+  @apply border-gray-600 bg-gray-800 text-gray-100;
+}
+
+.dark .input::placeholder {
+  @apply text-gray-500;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white border border-gray-200 rounded-xl shadow-sm p-6;
+}
+
+.dark .card {
+  @apply bg-gray-800 border-gray-700;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-green-100 text-green-800;
+}
+
+.dark .badge-success {
+  @apply bg-green-900 text-green-200;
+}
+
+.badge-error {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-red-100 text-red-800;
+}
+
+.dark .badge-error {
+  @apply bg-red-900 text-red-200;
+}
+
+.badge-warning {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.dark .badge-warning {
+  @apply bg-yellow-900 text-yellow-200;
+}
+
+.badge-info {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-blue-100 text-blue-800;
+}
+
+.dark .badge-info {
+  @apply bg-blue-900 text-blue-200;
+}
+
+/* =============================================================================
+   UTILITY CLASSES
+   ============================================================================= */
+
+/* Scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-400) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-400);
+  border-radius: 4px;
+}
+
+/* Text gradient */
+.text-gradient {
+  @apply bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent;
+}
+
+/* Glass effect */
+.glass {
+  @apply bg-white/80 backdrop-blur-lg border border-white/20;
+}
+
+.dark .glass {
+  @apply bg-gray-900/80 border-gray-700/20;
+}
