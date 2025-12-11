@@ -17,7 +17,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { ProcessManager, ProcessInfo, ProcessResult } from '../lib/process-manager';
+import { ProcessManager } from '../lib/process-manager';
 
 const router = Router();
 const processManager = new ProcessManager();

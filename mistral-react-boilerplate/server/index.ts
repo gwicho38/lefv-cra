@@ -31,6 +31,7 @@ import dotenv from 'dotenv';
 import cacheRoutes from './routes/cache';
 import processRoutes from './routes/process';
 import healthRoutes from './routes/health';
+import mistralRoutes from './routes/mistral';
 
 // Import Redis utilities
 import { closeRedis } from './redis';
@@ -95,6 +96,9 @@ app.use('/api/cache', cacheRoutes);
 // Process/subprocess management routes
 app.use('/api/process', processRoutes);
 
+// Mistral AI routes
+app.use('/api/mistral', mistralRoutes);
+
 // Root route
 app.get('/', (_req: Request, res: Response) => {
   res.json({
@@ -104,6 +108,7 @@ app.get('/', (_req: Request, res: Response) => {
       health: '/api/health',
       cache: '/api/cache',
       process: '/api/process',
+      mistral: '/api/mistral',
     },
   });
 });

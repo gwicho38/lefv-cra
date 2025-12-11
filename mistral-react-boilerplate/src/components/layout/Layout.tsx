@@ -23,6 +23,7 @@ export default function Layout() {
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/todos', label: 'Todos' },
+    { path: '/mistral', label: 'Mistral SDK' },
   ];
 
   const toggleTheme = () => {

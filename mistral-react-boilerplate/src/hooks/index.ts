@@ -22,3 +22,18 @@ export {
   useCacheApi,
   apiClient,
 } from './useApi';
+
+// Mistral AI hooks
+export {
+  useMistralChat,
+  useMistralStream,
+  useMistralConversation,
+  useMistralCode,
+  useMistralEmbeddings,
+  useMistralTools,
+  useMistralHealth,
+  useMistralModels,
+  type ChatMessage,
+  type ChatOptions,
+  type ToolDefinition,
+} from './useMistral';

@@ -23,6 +23,7 @@ import { initializeUI } from '@/store/slices/uiSlice';
 // Pages
 import HomePage from '@/components/pages/HomePage';
 import TodosPage from '@/components/pages/TodosPage';
+import MistralPage from '@/pages/MistralPage';
 
 // Layout
 import Layout from '@/components/layout/Layout';
@@ -84,6 +85,7 @@ function App() {
                   <Route path="/" element={<Layout />}>
                     <Route index element={<HomePage />} />
                     <Route path="todos" element={<TodosPage />} />
+                    <Route path="mistral" element={<MistralPage />} />
                   </Route>
                 </Routes>
               </Suspense>

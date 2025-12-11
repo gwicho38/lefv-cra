@@ -227,7 +227,7 @@ export class ProcessManager extends EventEmitter {
       env: { ...process.env, ...env },
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       exec(command, execOptions, (error, stdout, stderr) => {
         const duration = Date.now() - startTime;
 

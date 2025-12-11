@@ -41,24 +41,28 @@ This document provides a comprehensive overview of the Mistral React Boilerplate
 │  │  Cache Routes   │  │  Health Routes  │  │   Process Routes        │ │
 │  └────────┬────────┘  └─────────────────┘  └───────────┬─────────────┘ │
 │           │                                             │               │
-│           ▼                                             ▼               │
-│  ┌─────────────────┐                        ┌─────────────────────────┐ │
-│  │  Redis Client   │                        │   Process Manager       │ │
-│  └────────┬────────┘                        │   (Child Processes)     │ │
-│           │                                 └─────────────────────────┘ │
-└───────────┼─────────────────────────────────────────────────────────────┘
-            │
-            ▼
-┌─────────────────────┐          ┌─────────────────────────────────────────┐
-│       REDIS         │          │              SUPABASE                    │
-│  (Cache Layer)      │          │  ┌─────────────┐  ┌─────────────────┐  │
-│                     │          │  │  PostgreSQL │  │   Realtime      │  │
-│  - Key-Value Store  │          │  │  Database   │  │   Subscriptions │  │
-│  - Rate Limiting    │          │  └─────────────┘  └─────────────────┘  │
-│  - Distributed Lock │          │  ┌─────────────┐  ┌─────────────────┐  │
-└─────────────────────┘          │  │    Auth     │  │     Storage     │  │
-                                 │  └─────────────┘  └─────────────────┘  │
-                                 └─────────────────────────────────────────┘
+│  ┌─────────────────┐                                    │               │
+│  │ Mistral Routes  │                                    │               │
+│  └────────┬────────┘                                    │               │
+│           │                                             ▼               │
+│           ▼                                 ┌─────────────────────────┐ │
+│  ┌─────────────────┐  ┌─────────────────┐  │   Process Manager       │ │
+│  │  Redis Client   │  │ Mistral Client  │  │   (Child Processes)     │ │
+│  └────────┬────────┘  └────────┬────────┘  └─────────────────────────┘ │
+│           │                    │                                        │
+└───────────┼────────────────────┼────────────────────────────────────────┘
+            │                    │
+            ▼                    ▼
+┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────────────┐
+│       REDIS         │  │    MISTRAL AI       │  │         SUPABASE            │
+│  (Cache Layer)      │  │  (AI/ML Provider)   │  │  ┌─────────┐ ┌──────────┐  │
+│                     │  │                     │  │  │PostgreSQL│ │ Realtime │  │
+│  - Key-Value Store  │  │  - Chat Completion  │  │  │ Database │ │Subscript.│  │
+│  - Rate Limiting    │  │  - Streaming        │  │  └─────────┘ └──────────┘  │
+│  - Distributed Lock │  │  - Function Calling │  │  ┌─────────┐ ┌──────────┐  │
+└─────────────────────┘  │  - Code Generation  │  │  │  Auth   │ │ Storage  │  │
+                         │  - Embeddings       │  │  └─────────┘ └──────────┘  │
+                         └─────────────────────┘  └─────────────────────────────┘
 ```
 
 ---
@@ -75,14 +79,24 @@ mistral-react-boilerplate/
 │   │   ├── pages/               # Route-level components
 │   │   │   ├── HomePage.tsx     # Landing page
 │   │   │   └── TodosPage.tsx    # CRUD demo page
+│   │   ├── examples/            # Mistral SDK example components
+│   │   │   ├── ChatExample.tsx      # Basic chat completion
+│   │   │   ├── StreamingExample.tsx # Real-time streaming
+│   │   │   ├── ConversationExample.tsx  # Multi-turn chat
+│   │   │   ├── CodeExample.tsx      # Code generation
+│   │   │   └── FunctionCallingExample.tsx  # Tool use
 │   │   └── ui/                  # Reusable UI primitives
 │   │       ├── LoadingSpinner.tsx
 │   │       └── ErrorBoundary.tsx
 │   │
+│   ├── pages/                   # Page components
+│   │   └── MistralPage.tsx      # Mistral SDK showcase
+│   │
 │   ├── hooks/                   # Custom React hooks
 │   │   ├── index.ts             # Barrel export
 │   │   ├── useSupabase.ts       # Supabase query/mutation hooks
-│   │   └── useApi.ts            # HTTP request hooks
+│   │   ├── useApi.ts            # HTTP request hooks
+│   │   └── useMistral.ts        # Mistral AI SDK hooks
 │   │
 │   ├── store/                   # Redux state management
 │   │   ├── index.ts             # Store configuration
@@ -106,12 +120,14 @@ mistral-react-boilerplate/
 │   ├── routes/                  # Express route handlers
 │   │   ├── cache.ts             # Redis cache CRUD endpoints
 │   │   ├── health.ts            # Health check endpoints
-│   │   └── process.ts           # Subprocess management endpoints
+│   │   ├── process.ts           # Subprocess management endpoints
+│   │   └── mistral.ts           # Mistral AI API endpoints
 │   │
 │   ├── lib/                     # Server utilities
 │   │   └── process-manager.ts   # Child process orchestration
 │   │
 │   ├── redis.ts                 # Redis client + caching helpers
+│   ├── mistral.ts               # Mistral AI client + helpers
 │   └── index.ts                 # Express server entry
 │
 ├── docs/                        # Documentation
@@ -181,7 +197,13 @@ User Action
 │                               ├── <Header>
 │                               ├── <Outlet>  # Page content
 │                               │   ├── <HomePage>
-│                               │   └── <TodosPage>
+│                               │   ├── <TodosPage>
+│                               │   └── <MistralPage>
+│                               │       ├── <ChatExample>
+│                               │       ├── <StreamingExample>
+│                               │       ├── <ConversationExample>
+│                               │       ├── <CodeExample>
+│                               │       └── <FunctionCallingExample>
 │                               └── <Footer>
 ```
 
@@ -279,6 +301,14 @@ server/
 | POST | `/api/process/exec` | Execute command |
 | GET | `/api/process` | List running processes |
 | POST | `/api/process/:id/kill` | Kill a process |
+| POST | `/api/mistral/chat` | Chat completion |
+| POST | `/api/mistral/chat/stream` | Streaming chat (SSE) |
+| POST | `/api/mistral/chat/tools` | Function calling |
+| POST | `/api/mistral/embeddings` | Generate embeddings |
+| POST | `/api/mistral/code` | Code generation |
+| POST | `/api/mistral/conversation` | Manage conversation |
+| GET | `/api/mistral/models` | List available models |
+| GET | `/api/mistral/health` | Mistral SDK health check |
 
 ---
 
@@ -497,18 +527,142 @@ REDIS_URL=redis://localhost:6379
 REDIS_CACHE_TTL=3600
 ```
 
-### Mistral AI (Interview Integration)
+### Mistral AI SDK Integration
 
-| Feature | Usage |
-|---------|-------|
-| **Chat Completions** | Text generation |
-| **Streaming** | Real-time responses |
-| **Function Calling** | Tool use |
+This boilerplate includes comprehensive Mistral AI SDK integration demonstrating real-world usage patterns.
+
+**Package:** `@mistralai/mistralai`
+
+| Feature | Model | Usage |
+|---------|-------|-------|
+| **Chat Completion** | mistral-small-latest | Single-turn Q&A |
+| **Streaming** | mistral-small-latest | Real-time token generation |
+| **Multi-turn Conversations** | mistral-small-latest | Context-aware chat |
+| **Code Generation** | codestral-latest | Code completion/generation |
+| **Function Calling** | mistral-large-latest | Tool use / external integrations |
+| **Embeddings** | mistral-embed | Text embeddings for search/RAG |
 
 **Configuration:**
 ```env
 MISTRAL_API_KEY=your-api-key
 ```
+
+**Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       MISTRAL SDK INTEGRATION                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  Frontend (React Hooks)                                                  │
+│  ┌────────────────────────────────────────────────────────────────┐    │
+│  │  useMistralChat()      - Single completions                     │    │
+│  │  useMistralStream()    - SSE streaming with abort              │    │
+│  │  useMistralConversation() - Multi-turn with history            │    │
+│  │  useMistralCode()      - Codestral code generation             │    │
+│  │  useMistralTools()     - Function calling / tool use           │    │
+│  │  useMistralEmbeddings() - Text embeddings                      │    │
+│  └────────────────────────────────────────────────────────────────┘    │
+│                              │                                          │
+│                              ▼                                          │
+│  Express API Routes                                                      │
+│  ┌────────────────────────────────────────────────────────────────┐    │
+│  │  POST /api/mistral/chat          - Basic completion            │    │
+│  │  POST /api/mistral/chat/stream   - SSE streaming               │    │
+│  │  POST /api/mistral/chat/tools    - Function calling            │    │
+│  │  POST /api/mistral/embeddings    - Text embeddings             │    │
+│  │  POST /api/mistral/code          - Code generation             │    │
+│  │  POST /api/mistral/conversation  - Conversation management     │    │
+│  │  GET  /api/mistral/models        - List available models       │    │
+│  │  GET  /api/mistral/health        - SDK health check            │    │
+│  └────────────────────────────────────────────────────────────────┘    │
+│                              │                                          │
+│                              ▼                                          │
+│  Server Client (server/mistral.ts)                                       │
+│  ┌────────────────────────────────────────────────────────────────┐    │
+│  │  Mistral class instance + helper functions                      │    │
+│  │  chatCompletion(), streamChatCompletion(), chatWithTools()     │    │
+│  │  generateEmbeddings(), generateCode(), Conversation class      │    │
+│  └────────────────────────────────────────────────────────────────┘    │
+│                              │                                          │
+│                              ▼                                          │
+│  Mistral AI API (api.mistral.ai)                                        │
+│  ┌────────────────────────────────────────────────────────────────┐    │
+│  │  /v1/chat/completions, /v1/embeddings, /v1/fim/completions     │    │
+│  └────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**SDK Usage Patterns:**
+
+```typescript
+// 1. Basic Chat Completion
+const { chat, data, loading } = useMistralChat();
+await chat([
+  { role: 'system', content: 'You are helpful.' },
+  { role: 'user', content: 'Hello!' }
+]);
+
+// 2. Streaming (SSE)
+const { content, loading, stream, abort } = useMistralStream();
+await stream([{ role: 'user', content: 'Write a story' }]);
+// content updates in real-time, call abort() to stop
+
+// 3. Multi-turn Conversation
+const { messages, sendMessage, clearHistory } = useMistralConversation(
+  'You are a coding tutor'
+);
+await sendMessage('Explain React hooks');
+await sendMessage('Show me an example'); // Remembers context
+
+// 4. Code Generation (Codestral)
+const { code, generate } = useMistralCode();
+await generate('Create a debounce hook', 'typescript');
+
+// 5. Function Calling
+const tools: ToolDefinition[] = [{
+  type: 'function',
+  function: {
+    name: 'get_weather',
+    description: 'Get weather for a location',
+    parameters: {
+      type: 'object',
+      properties: {
+        location: { type: 'string', description: 'City name' }
+      },
+      required: ['location']
+    }
+  }
+}];
+const { toolCalls, call } = useMistralTools(tools);
+await call([{ role: 'user', content: 'Weather in Paris?' }]);
+// toolCalls contains function calls to execute
+
+// 6. Embeddings
+const { embeddings, embed } = useMistralEmbeddings();
+await embed(['Hello world', 'Semantic search']);
+// Returns 1024-dimensional vectors
+```
+
+**Available Models:**
+
+| Model ID | Use Case | Notes |
+|----------|----------|-------|
+| `open-mistral-7b` | General chat | Lightweight |
+| `mistral-small-latest` | General chat | Balanced |
+| `mistral-large-latest` | Complex tasks | Best for function calling |
+| `codestral-latest` | Code generation | Optimized for code |
+| `mistral-embed` | Embeddings | 1024 dimensions |
+
+**Example Components:**
+
+Located in `src/components/examples/`:
+- `ChatExample.tsx` - Basic chat completion
+- `StreamingExample.tsx` - Real-time streaming with abort
+- `ConversationExample.tsx` - Multi-turn context-aware chat
+- `CodeExample.tsx` - Codestral code generation
+- `FunctionCallingExample.tsx` - Tool use demonstration
 
 ---
 

@@ -96,21 +96,13 @@ export interface Database {
       };
     };
 
-    Views: {
-      // Add your database views here
-    };
+    Views: Record<string, never>;
 
-    Functions: {
-      // Add your database functions here
-    };
+    Functions: Record<string, never>;
 
-    Enums: {
-      // Add your database enums here
-    };
+    Enums: Record<string, never>;
 
-    CompositeTypes: {
-      // Add your composite types here
-    };
+    CompositeTypes: Record<string, never>;
   };
 }
 
