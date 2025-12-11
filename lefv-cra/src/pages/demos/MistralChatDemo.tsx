@@ -3,90 +3,110 @@
  * Full-featured chatbot with streaming responses
  */
 
-import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useMistralConversation, useMistralStream, type ChatMessage } from '@/hooks';
+import { useState, useRef, useEffect } from 'react'; // React hooks: useState<T> for typed state, useRef<HTMLDivElement | null> for DOM refs, useEffect for lifecycle
+import { Link } from 'react-router-dom'; // Router Link component for client-side navigation
+import { useMistralConversation, useMistralStream, type ChatMessage } from '@/hooks'; // Custom hooks/types from app hooks module
+//   - ChatMessage type: { role: 'system' | 'user' | 'assistant'; content: string; /* optional fields may exist */ }
+//   - useMistralConversation(systemPrompt: string)
+//       returns: {
+//         messages: ChatMessage[],                                // conversation history (server-backed in non-streaming mode)
+//         sendMessage: (content: string) => Promise<void>,        // sends a user message and updates messages
+//         loading: boolean,                                       // loading state for non-streaming calls
+//         error: string | null,                                   // error string if request failed
+//         clearHistory: () => void                                // clears server-side history
+//       }
+//   - useMistralStream()
+//       returns: {
+//         stream: (messages: ChatMessage[]) => Promise<string | null>, // starts a streaming response given full message context, resolves to final assistant text or null
+//         loading: boolean,                                           // streaming in-progress flag
+//         error: string | null,                                       // streaming error
+//         abort: () => void                                           // aborts current streaming request
+//       }
 
-const SYSTEM_PROMPTS = {
-  assistant: 'You are a helpful, friendly AI assistant. Be concise but thorough in your responses.',
-  coder: 'You are an expert software engineer. Help with coding questions, debugging, and best practices. Use code examples when helpful.',
-  tutor: 'You are a patient and encouraging tutor. Explain concepts clearly, use analogies, and check for understanding.',
-  creative: 'You are a creative writing assistant. Help with storytelling, brainstorming, and creative projects.',
+const SYSTEM_PROMPTS = { // Preset system prompts to set assistant "persona" / behavior
+  assistant: 'You are a helpful, friendly AI assistant. Be concise but thorough in your responses.', // default assistant guidance
+  coder: 'You are an expert software engineer. Help with coding questions, debugging, and best practices. Use code examples when helpful.', // coder persona guidance
+  tutor: 'You are a patient and encouraging tutor. Explain concepts clearly, use analogies, and check for understanding.', // tutor persona guidance
+  creative: 'You are a creative writing assistant. Help with storytelling, brainstorming, and creative projects.', // creative persona guidance
 };
 
-type PersonaKey = keyof typeof SYSTEM_PROMPTS;
+type PersonaKey = keyof typeof SYSTEM_PROMPTS; // Restrict persona state to keys from SYSTEM_PROMPTS
 
 export default function MistralChatDemo() {
-  const [input, setInput] = useState('');
-  const [persona, setPersona] = useState<PersonaKey>('assistant');
-  const [useStreaming, setUseStreaming] = useState(true);
-  const [streamingContent, setStreamingContent] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [input, setInput] = useState(''); // Controlled textarea input value
+  const [persona, setPersona] = useState<PersonaKey>('assistant'); // Current persona selection, affects system prompt
+  const [useStreaming, setUseStreaming] = useState(true); // Toggle between streaming or non-streaming API modes
+  const [streamingContent, setStreamingContent] = useState(''); // Partial assistant content while streaming
+  const messagesEndRef = useRef<HTMLDivElement>(null); // DOM anchor used for scrollIntoView; typed as HTMLDivElement | null
 
-  // Non-streaming conversation hook
+  // Non-streaming conversation hook — initialize with system prompt string to set assistant role/context
   const {
     messages,
     sendMessage,
     loading: conversationLoading,
     error: conversationError,
     clearHistory,
-  } = useMistralConversation(SYSTEM_PROMPTS[persona]);
+  } = useMistralConversation(SYSTEM_PROMPTS[persona]); // argument: string system prompt from SYSTEM_PROMPTS[persona]
 
-  // Streaming hook
+  // Streaming hook — provides stream() that accepts ChatMessage[] and returns Promise<string | null>
   const {
     stream,
     loading: streamLoading,
     error: streamError,
     abort,
-  } = useMistralStream();
+  } = useMistralStream(); // no args; hook returns streaming client functions (stream, abort) and statuses
 
-  const loading = useStreaming ? streamLoading : conversationLoading;
-  const error = useStreaming ? streamError : conversationError;
+  const loading = useStreaming ? streamLoading : conversationLoading; // unified loading indicator depending on mode
+  const error = useStreaming ? streamError : conversationError; // unified error message depending on mode
 
-  // Local messages for streaming mode
+  // Local messages used only in streaming mode; array items conform to ChatMessage type
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages or streaming content change — improves UX for new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, localMessages, streamingContent]);
 
-  // Handle persona change - reset conversation
+  // Handle persona change: update selected persona and reset relevant state and history
   const handlePersonaChange = (newPersona: PersonaKey) => {
+    // newPersona: one of the PersonaKey values (keys of SYSTEM_PROMPTS)
     setPersona(newPersona);
-    setLocalMessages([]);
-    setStreamingContent('');
-    clearHistory();
+    setLocalMessages([]); // clear local streaming messages
+    setStreamingContent(''); // clear any partial streaming text
+    clearHistory(); // resets server conversation state tied to prior persona
   };
 
+  // Choose which message list to display depending on streaming toggle; exclude system messages from UI
   const displayMessages = useStreaming
     ? localMessages.filter(m => m.role !== 'system')
     : messages.filter(m => m.role !== 'system');
 
+  // Submit handler for both streaming and non-streaming modes
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // e: React.FormEvent<HTMLFormElement> - used only to stop form submit default
     if (!input.trim() || loading) return;
 
     const userMessage = input.trim();
     setInput('');
 
     if (useStreaming) {
-      // Add user message to local state
-      const newUserMessage: ChatMessage = { role: 'user', content: userMessage };
+      const newUserMessage: ChatMessage = { role: 'user', content: userMessage }; // ChatMessage shape enforced here
       const newMessages = [...localMessages, newUserMessage];
       setLocalMessages(newMessages);
-      setStreamingContent('');
+      setStreamingContent(''); // reset streaming buffer
 
-      // Stream the response
+      // Build full context array for stream — stream(messages: ChatMessage[]) expects the full history including system prompt
       const allMessages: ChatMessage[] = [
-        { role: 'system', content: SYSTEM_PROMPTS[persona] },
+        { role: 'system', content: SYSTEM_PROMPTS[persona] }, // system message: string prompt guiding assistant behavior
         ...newMessages,
       ];
 
+      // stream() signature: (messages: ChatMessage[]) => Promise<string | null>
+      // The hook may additionally emit incremental deltas to update streamingContent (handled inside the hook)
       const result = await stream(allMessages);
 
       if (result) {
-        // Add the complete assistant message
+        // result: final aggregated assistant response (string) or null if aborted/failed
         setLocalMessages([
           ...newMessages,
           { role: 'assistant', content: result },
@@ -94,19 +114,21 @@ export default function MistralChatDemo() {
         setStreamingContent('');
       }
     } else {
+      // sendMessage(content: string) returns Promise<void> and updates messages via the conversation hook
       await sendMessage(userMessage);
     }
   };
 
   const handleClear = () => {
     if (useStreaming) {
-      setLocalMessages([]);
+      setLocalMessages([]); // clear local streaming messages only
       setStreamingContent('');
     } else {
-      clearHistory();
+      clearHistory(); // clear server-backed conversation history
     }
   };
 
+  // Submit on Enter when not holding Shift; allows Shift+Enter for newline
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -115,26 +137,26 @@ export default function MistralChatDemo() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 h-[calc(100vh-8rem)] flex flex-col">
-      <Link to="/" className="text-primary-600 hover:text-primary-700 mb-4 inline-block">
+    <div className="max-w-4xl mx-auto px-4 py-8 h-[calc(100vh-8rem)] flex flex-col"> {/* page container with layout classes */}
+      <Link to="/" className="text-primary-600 hover:text-primary-700 mb-4 inline-block"> {/* back link */}
         ← Back to Home
       </Link>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4"> {/* header row: title + controls */}
         <div>
-          <h1 className="text-2xl font-bold">Mistral AI Chatbot</h1>
+          <h1 className="text-2xl font-bold">Mistral AI Chatbot</h1> {/* page title */}
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Full-featured chat with the Mistral AI SDK
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4"> {/* controls: streaming toggle + persona selector */}
           {/* Streaming toggle */}
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
-              checked={useStreaming}
-              onChange={(e) => setUseStreaming(e.target.checked)}
+              checked={useStreaming} // controlled checkbox reflects useStreaming state
+              onChange={(e) => setUseStreaming(e.target.checked)} // toggle streaming mode
               className="rounded"
             />
             Streaming
@@ -142,8 +164,8 @@ export default function MistralChatDemo() {
 
           {/* Persona selector */}
           <select
-            value={persona}
-            onChange={(e) => handlePersonaChange(e.target.value as PersonaKey)}
+            value={persona} // controlled select bound to persona state
+            onChange={(e) => handlePersonaChange(e.target.value as PersonaKey)} // update persona and reset history
             className="input text-sm py-1"
           >
             <option value="assistant">Assistant</option>
@@ -158,41 +180,41 @@ export default function MistralChatDemo() {
       <div className="flex-1 flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-900">
         {/* Messages area */}
         <div className="flex-1 overflow-y-auto">
-          {displayMessages.length === 0 && !streamingContent ? (
+          {displayMessages.length === 0 && !streamingContent ? ( // empty state when there are no messages and nothing streaming
             <div className="h-full flex items-center justify-center text-gray-400">
               <div className="text-center">
-                <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"> {/* decorative icon */}
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
                 <p>Start a conversation with Mistral AI</p>
-                <p className="text-sm mt-1">Currently using: <span className="font-medium capitalize">{persona}</span> persona</p>
+                <p className="text-sm mt-1">Currently using: <span className="font-medium capitalize">{persona}</span> persona</p> {/* shows active persona */}
               </div>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800"> {/* message list */}
               {displayMessages.map((message, index) => (
                 <div
                   key={index}
                   className={`p-4 ${
                     message.role === 'user'
-                      ? 'bg-primary-50 dark:bg-primary-900/20'
-                      : 'bg-white dark:bg-gray-900'
+                      ? 'bg-primary-50 dark:bg-primary-900/20' // style for user messages
+                      : 'bg-white dark:bg-gray-900' // style for assistant messages
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       message.role === 'user'
                         ? 'bg-primary-600 text-white'
-                        : 'bg-gradient-to-br from-orange-400 to-red-500 text-white'
+                        : 'bg-linear-to-br from-orange-400 to-red-500 text-white'
                     }`}>
-                      {message.role === 'user' ? 'U' : 'M'}
+                      {message.role === 'user' ? 'U' : 'M'} {/* avatar initial */}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-500 mb-1">
-                        {message.role === 'user' ? 'You' : 'Mistral AI'}
+                        {message.role === 'user' ? 'You' : 'Mistral AI'} {/* label for who sent the message */}
                       </p>
                       <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <p className="whitespace-pre-wrap">{message.content}</p> {/* message content preserves line breaks */}
                       </div>
                     </div>
                   </div>
@@ -203,13 +225,13 @@ export default function MistralChatDemo() {
               {streamingContent && (
                 <div className="p-4 bg-white dark:bg-gray-900">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-gradient-to-br from-orange-400 to-red-500 text-white">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-linear-to-br from-orange-400 to-red-500 text-white">
                       M
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-500 mb-1">Mistral AI</p>
                       <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <p className="whitespace-pre-wrap">{streamingContent}</p>
+                        <p className="whitespace-pre-wrap">{streamingContent}</p> {/* show partial streaming text */}
                       </div>
                     </div>
                   </div>
@@ -217,10 +239,10 @@ export default function MistralChatDemo() {
               )}
 
               {/* Loading indicator */}
-              {loading && !streamingContent && (
+              {loading && !streamingContent && ( // when loading but no streaming buffer, show pulsing dots
                 <div className="p-4 bg-white dark:bg-gray-900">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-gradient-to-br from-orange-400 to-red-500 text-white">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-linear-to-br from-orange-400 to-red-500 text-white">
                       M
                     </div>
                     <div className="flex-1">
@@ -235,7 +257,7 @@ export default function MistralChatDemo() {
                 </div>
               )}
 
-              <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} /> {/* anchor used to scroll to bottom */}
             </div>
           )}
         </div>
@@ -243,26 +265,26 @@ export default function MistralChatDemo() {
         {/* Error display */}
         {error && (
           <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
-            {error}
+            {error} {/* surface API or hook errors to the user */}
           </div>
         )}
 
         {/* Input area */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit} className="flex gap-2"> {/* form submission handled by handleSubmit */}
             <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
+              value={input} // controlled value
+              onChange={(e) => setInput(e.target.value)} // update state on change
+              onKeyDown={handleKeyDown} // submit on Enter
               placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-              className="input flex-1 min-h-[44px] max-h-32 resize-none"
+              className="input flex-1 min-h-11 max-h-32 resize-none"
               rows={1}
-              disabled={loading}
+              disabled={loading} // disable input while loading to avoid duplicate sends
             />
             {loading && useStreaming ? (
               <button
                 type="button"
-                onClick={abort}
+                onClick={abort} // allow user to abort an ongoing stream
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
               >
                 Stop
@@ -271,7 +293,7 @@ export default function MistralChatDemo() {
               <button
                 type="submit"
                 className="btn-primary"
-                disabled={loading || !input.trim()}
+                disabled={loading || !input.trim()} // disable send when loading or input empty
               >
                 Send
               </button>
@@ -280,14 +302,14 @@ export default function MistralChatDemo() {
 
           <div className="flex items-center justify-between mt-2">
             <button
-              onClick={handleClear}
+              onClick={handleClear} // clear conversation action
               className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              disabled={displayMessages.length === 0 || loading}
+              disabled={displayMessages.length === 0 || loading} // disable when nothing to clear or when loading
             >
               Clear conversation
             </button>
             <span className="text-xs text-gray-400">
-              {displayMessages.length} messages
+              {displayMessages.length} messages {/* quick message count */}
             </span>
           </div>
         </div>
