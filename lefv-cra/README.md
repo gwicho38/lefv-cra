@@ -126,15 +126,27 @@ lsh pull
 
 **Multi-environment support:**
 
+Use `--env` to define named environments for your secrets:
+
 ```bash
-# Push different environments
-lsh push --env dev
+# Push to named environments
+lsh push --env dev           # Development environment
+lsh push --env staging       # Staging environment
+lsh push --env prod          # Production environment
+
+# Push a different .env file to a specific environment
 lsh push --file .env.staging --env staging
 lsh push --file .env.prod --env prod
 
-# Pull specific environment
+# Pull from a specific environment
+lsh pull --env dev
 lsh pull --env prod
+
+# List all available environments
+lsh env
 ```
+
+Environment names can be any string (e.g., `dev`, `staging`, `prod`, `local`, `test`, `feature-x`). This allows you to maintain separate secret configurations for different deployment targets.
 
 This eliminates the need to manually copy `.env` files or share secrets insecurely. Your secrets are encrypted with AES-256 and synced via IPFS.
 

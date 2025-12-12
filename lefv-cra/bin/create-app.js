@@ -247,6 +247,16 @@ npm-debug.log*
   info('  lsh pull');
   log('    Pull .env on another machine\n');
 
+  log('Multi-environment support:\n');
+  info('  lsh push --env dev');
+  log('    Push to a named environment (dev, staging, prod, etc.)\n');
+
+  info('  lsh pull --env prod');
+  log('    Pull from a specific environment\n');
+
+  info('  lsh env');
+  log('    List all available environments\n');
+
   log('Learn more: https://github.com/gwicho38/lsh\n');
 
   log('='.repeat(50));
