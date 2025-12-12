@@ -82,6 +82,7 @@ function main() {
     'vite.config.ts',
     'tsconfig.json',
     'tsconfig.app.json',
+    'tsconfig.node.json',
     'tsconfig.server.json',
     'tailwind.config.ts',
     'postcss.config.js',
