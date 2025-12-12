@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm view:*)",
+      "Bash(gh repo view:*)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git push:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(ls:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(npm publish:*)"
+    ]
+  }
+}

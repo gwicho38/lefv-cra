@@ -231,8 +231,26 @@ npm-debug.log*
   log('  2. Add your Supabase and Mistral API keys');
   log('  3. Start building!\n');
 
-  log('Happy coding!');
-  log('='.repeat(50) + '\n');
+  log('='.repeat(50));
+  log('\nSecrets Management with LSH (Optional):\n', colors.cyan);
+  log('Sync your .env across machines with encrypted storage:\n');
+
+  info('  npm install -g lsh-framework');
+  log('    Install the secrets manager\n');
+
+  info('  lsh init');
+  log('    One-time setup (generates encryption key)\n');
+
+  info('  lsh push');
+  log('    Push .env to encrypted cloud storage\n');
+
+  info('  lsh pull');
+  log('    Pull .env on another machine\n');
+
+  log('Learn more: https://github.com/gwicho38/lsh\n');
+
+  log('='.repeat(50));
+  log('\nHappy coding!\n');
 }
 
 main();

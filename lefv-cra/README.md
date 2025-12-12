@@ -96,6 +96,48 @@ VITE_API_URL=http://localhost:3001
 MISTRAL_API_KEY=your-mistral-api-key
 ```
 
+### Syncing Secrets with LSH (Recommended)
+
+If you use [lsh-framework](https://github.com/gwicho38/lsh) for secrets management, you can sync your `.env` across all your machines:
+
+```bash
+# Install lsh-framework globally (one-time)
+npm install -g lsh-framework
+
+# Initialize lsh (one-time setup)
+lsh init
+```
+
+**Push secrets from your main machine:**
+
+```bash
+cd my-app
+lsh push
+```
+
+**Pull secrets on another machine:**
+
+```bash
+cd my-app
+# Add your encryption key first
+echo "LSH_SECRETS_KEY=your-shared-key" > .env
+lsh pull
+```
+
+**Multi-environment support:**
+
+```bash
+# Push different environments
+lsh push --env dev
+lsh push --file .env.staging --env staging
+lsh push --file .env.prod --env prod
+
+# Pull specific environment
+lsh pull --env prod
+```
+
+This eliminates the need to manually copy `.env` files or share secrets insecurely. Your secrets are encrypted with AES-256 and synced via IPFS.
+
 ## Scripts
 
 | Command | Description |
