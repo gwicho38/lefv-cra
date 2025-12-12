@@ -57,12 +57,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lefv/lefv-cra"
+    "url": "https://github.com/gwicho38/lefv-cra"
   },
   "bugs": {
-    "url": "https://github.com/lefv/lefv-cra/issues"
+    "url": "https://github.com/gwicho38/lefv-cra/issues"
   },
-  "homepage": "https://github.com/lefv/lefv-cra#readme",
+  "homepage": "https://github.com/gwicho38/lefv-cra#readme",
   "engines": {
     "node": ">=18.0.0"
   },
